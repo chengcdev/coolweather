@@ -9,6 +9,7 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -31,6 +32,7 @@ import okhttp3.Callback;
 import okhttp3.Response;
 
 public class WeatherActivity extends AppCompatActivity {
+    private static final String TAG = "WeatherActivity";
 
     public DrawerLayout drawerLayout;
 
@@ -107,12 +109,13 @@ public class WeatherActivity extends AppCompatActivity {
         if (weatherString != null){
             // 有缓存时直接解析天气数据
             Weather weather = Utility.handleWeatherResponse(weatherString);
+            mWeatherId = weather.basic.weatherId;
             showWeatherInfo(weather);
         }else{
             // 无缓存时去服务器查询天气
-            String weatherId = getIntent().getStringExtra("weather_id");
+            mWeatherId = getIntent().getStringExtra("weather_id");
             weatherLayout.setVisibility(View.INVISIBLE);
-            requestWeather(weatherId);
+            requestWeather(mWeatherId);
         }
 
         String bingPic = prefs.getString("bing_pic", null);
@@ -148,7 +151,9 @@ public class WeatherActivity extends AppCompatActivity {
 
     public void requestWeather(final String weatherId){
         String weatherUrl = "http://guolin.tech/api/weather?cityid=" +
-                weatherId + "&key=SUP33HrZM6KY7cTVTsRTDROdUBQ1xCca";
+                weatherId + "&key=45949dc3d82744f58eb1a90561156865";
+
+        Log.d(TAG, "requestWeather: " + weatherUrl);
         loadBingPic();
         HttpUtil.sendOkHttpRequest(weatherUrl, new Callback() {
             @Override
@@ -180,6 +185,7 @@ public class WeatherActivity extends AppCompatActivity {
 
                             editor.putString("weather", responseText);
                             editor.apply();
+                            mWeatherId = weather.basic.weatherId;
                             showWeatherInfo(weather);
                         }else{
                             Toast.makeText(WeatherActivity.this, "获取天气信息失败",
